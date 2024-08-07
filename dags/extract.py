@@ -1,23 +1,21 @@
-from airflow.decorators import task
 import requests
 import pandas as pd
-import pyarrow as pa
 
-@task
+
 def get_brands(**kwargs):
     r = requests.get("https://script.google.com/macros/s/AKfycbxNu27V2Y2LuKUIQMK8lX1y0joB6YmG6hUwB1fNeVbgzEh22TcDGrOak03Fk3uBHmz-/exec?route=brand-list")
     
     if r.status_code == 200:
         data = r.json()
-        brands = pd.DataFrame(data.get('data', []))
+        brands_df = pd.DataFrame(data.get('data', []))
 
-        return brands
+        return brands_df
     else:
         print(f"Failed to retrieve data. Status code: {r.status_code}")
 
         return pd.DataFrame()  
 
-@task
+
 def get_devices(**kwargs):
     r = requests.get("https://script.google.com/macros/s/AKfycbxNu27V2Y2LuKUIQMK8lX1y0joB6YmG6hUwB1fNeVbgzEh22TcDGrOak03Fk3uBHmz-/exec?route=device-list")
     

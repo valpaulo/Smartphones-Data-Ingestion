@@ -1,8 +1,8 @@
-from airflow.decorators import dag, task_group
+from airflow.decorators import dag, task_group, task
 from datetime import datetime, timedelta
-import requests
 import pandas as pd
 from extract import get_brands, get_devices
+from load import init_brands_table, init_devices_table, load_brands_to_db, load_devices_to_db
 
 
 default_args = {
@@ -13,19 +13,67 @@ default_args = {
 @dag(
     'get_brands_devices',
     description='Get all brands and device data',
-    schedule='@weekly',
+    schedule='@monthly',
     start_date=datetime(2024, 1, 1),
     catchup=False,
     default_args=default_args
 )
 def get_brands_devices():
-    
+    @task
+    def get_brands_task():
+        brands_df = get_brands()
+        return brands_df.to_json()  # Convert DataFrame to JSON for XCom
+
+    @task
+    def get_devices_task():
+        devices_df = get_devices()
+        return devices_df.to_json()  # Convert DataFrame to JSON for XCom
+
+    @task
+    def init_brands_table_task():
+        init_brands_table()
+
+    @task
+    def init_devices_table_task():
+        init_devices_table()
+
+    @task
+    def load_brands_to_db_task(brands_json):
+        brands_df = pd.read_json(brands_json)  # Convert JSON back to DataFrame
+        load_brands_to_db(brands_df)
+
+    @task
+    def load_devices_to_db_task(devices_json):
+        devices_df = pd.read_json(devices_json)  # Convert JSON back to DataFrame
+        load_devices_to_db(devices_df)
+
     @task_group
     def init_get_brands_devices():
-        get_brands()
-        get_devices()
-    init_get_brands_devices()
+        brands_json = get_brands_task()
+        devices_json = get_devices_task()
+        return brands_json, devices_json
+
+    @task_group
+    def init_brands_devices_table():
+        init_brands_table_task()
+        init_devices_table_task()
+
+    @task_group
+    def load_brands_devices(brands_json, devices_json):
+        load_brands_to_db_task(brands_json)
+        load_devices_to_db_task(devices_json)
+
+    # Task dependencies
+    brands_json, devices_json = init_get_brands_devices()
+    init = init_brands_devices_table()
+    load = load_brands_devices(brands_json, devices_json)
+
+    init >> load
+
 get_brands_devices()
+
+
+
 # def get_device_details(key):
 #     # TODO Divide these to multiple functions
 #     r = 'https://script.google.com/macros/s/AKfycbxNu27V2Y2LuKUIQMK8lX1y0joB6YmG6hUwB1fNeVbgzEh22TcDGrOak03Fk3uBHmz-/exec'
