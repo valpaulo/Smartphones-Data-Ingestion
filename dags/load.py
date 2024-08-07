@@ -16,11 +16,10 @@ def init_brands_table():
 def init_devices_table():
     pg_hook = PostgresHook(postgres_conn_id = "postgres_conn_id")
     raw_sql = """ CREATE TABLE IF NOT EXISTS devices(
-                    device_id INT UNIQUE,
+                    device_id INT,
                     device_name VARCHAR,
                     device_type VARCHAR,
-                    device_image VARCHAR,
-                    key VARCHAR,
+                    key VARCHAR UNIQUE,
                     brand_id INT,
                     brand_name VARCHAR,
                     brand_key VARCHAR
@@ -49,5 +48,31 @@ def format_brands_row(row):
 
 
 
-def load_devices_to_db(devices_df):
-    pass
+def load_devices_to_db(devices_df: DataFrame):
+    pg_hook = PostgresHook(postgres_conn_id = "postgres_conn_id")
+
+    values_str = ",\n".join(devices_df.apply(format_devices_row, axis=1))
+
+    insert_sql = f""" INSERT INTO devices (
+                            device_id, 
+                            device_name, 
+                            device_type,
+                            key,
+                            brand_id,
+                            brand_name,
+                            brand_key)
+                        VALUES {values_str}
+                        ON CONFLICT (key) DO NOTHING;
+                        """
+    pg_hook.run(insert_sql)
+
+def format_devices_row(row):
+    device_name = row['device_name'].replace("'", "''")
+    key = row['key'].replace("'","''")
+    return f"""({row['device_id']},
+                '{device_name}',
+                '{row['device_type']}',
+                '{key}',
+                {row['brand_id']},
+                '{row['brand_name']}',
+                '{row['brand_key']}')"""
