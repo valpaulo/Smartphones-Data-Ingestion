@@ -1,7 +1,10 @@
+from airflow.decorators import task
 import requests
 import pandas as pd
+import pyarrow as pa
 
-def get_brands():
+@task
+def get_brands(**kwargs):
     r = requests.get("https://script.google.com/macros/s/AKfycbxNu27V2Y2LuKUIQMK8lX1y0joB6YmG6hUwB1fNeVbgzEh22TcDGrOak03Fk3uBHmz-/exec?route=brand-list")
     
     if r.status_code == 200:
@@ -14,7 +17,8 @@ def get_brands():
 
         return pd.DataFrame()  
 
-def get_devices():
+@task
+def get_devices(**kwargs):
     r = requests.get("https://script.google.com/macros/s/AKfycbxNu27V2Y2LuKUIQMK8lX1y0joB6YmG6hUwB1fNeVbgzEh22TcDGrOak03Fk3uBHmz-/exec?route=device-list")
     
     if r.status_code == 200:

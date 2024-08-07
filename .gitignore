@@ -1,4 +1,14 @@
+#virtual environment
 venv/
 .venv
 
 __pycache__
+
+
+#ignore airflow configs
+airflow.cfg
+airflow.db
+logs
+
+#
+
