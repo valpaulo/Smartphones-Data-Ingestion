@@ -104,11 +104,11 @@ def get_specs():
     # Task dependencies
     device_keys_df = get_device_keys_task()
     specs_df = get_all_devices_info_task(device_keys_df)
-    load = load_specs_to_db_task(specs_df)
     init = init_specs_table_task()
+    load = load_specs_to_db_task(specs_df)
     
-    init >>load
+    init >> load
 
-get_specs()
+get_specs() #test
 
 
