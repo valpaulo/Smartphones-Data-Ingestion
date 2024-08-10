@@ -1,9 +1,9 @@
 from airflow.decorators import dag, task_group, task
 from datetime import datetime, timedelta
 import pandas as pd
-import json
-from extract import get_brands, get_devices, get_device_keys, get_all_devices_info
-from load import init_brands_table, init_devices_table, load_brands_to_db, load_devices_to_db, load_specs_to_db, init_specs_table
+# import json
+from devices.extract import get_brands, get_devices, get_device_keys, get_all_devices_info
+from devices.load import init_brands_table, init_devices_table, load_brands_to_db, load_devices_to_db, load_specs_to_db, init_specs_table
 
 
 default_args = {
@@ -109,6 +109,6 @@ def get_specs():
     
     init >> load
 
-get_specs() #testing123123
+get_specs()
 
 
