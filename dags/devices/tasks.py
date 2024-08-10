@@ -109,6 +109,6 @@ def get_specs():
     
     init >> load
 
-get_specs() #test
+get_specs() #testing123123
 
 

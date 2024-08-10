@@ -13,3 +13,6 @@ logs
 
 devices_df
 
+#currently testing selenium
+chromedriver
+dags/test_selenium.py
